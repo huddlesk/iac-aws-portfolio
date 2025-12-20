@@ -1,0 +1,22 @@
+name: Terraform CI
+on: [pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, prod]  # Parallel validation
+    steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.14.3
+    - run: |
+        cd environments/${{ matrix.env }}
+        terraform init \
+          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+          -backend-config="key=environments/${{ matrix.env }}/terraform.tfstate"
+    - run: |
+        cd environments/${{ matrix.env }}
+        terraform validate
+        terraform plan -var-file="terraform.tfvars"
