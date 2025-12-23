@@ -1,6 +1,6 @@
 # Terraform AWS Portfolio Environment
 
-This repository defines a small, production‑style AWS environment using Terraform, designed to showcase Infrastructure as Code, modular design, and CI/CD‑friendly structure for DevOps and Cloud roles.
+This repository defines a small, production‑style AWS environment using Terraform and Ansible, designed to showcase Infrastructure as Code, modular design, and CI/CD‑friendly structure for Release, DevOps and Cloud roles.
 
 ## Architecture Overview
 

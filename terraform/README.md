@@ -1,16 +1,16 @@
 ## Repository Structure
 
-├── modules/
-│ ├── network/ # VPC + public/private subnets (wraps terraform-aws-modules/vpc)
-│ ├── security_groups/ # Web + SSH security groups
-│ ├── ec2_app/ # Single EC2 instance (wraps terraform-aws-modules/ec2-instance)
-│ └── s3_static_site/ # Static S3 website (wraps terraform-aws-modules/s3-bucket)
-└── environments/
-├── dev/
-│ ├── main.tf # Root module wiring dev environment together
-│ ├── variables.tf # Dev-specific variables (region, CIDRs, sizes)
-│ └── backend.tf # Remote state backend (S3 + DynamoDB)
-└── prod/
+- modules/
+  - network/ # VPC + public/private subnets (wraps terraform-aws-modules/vpc)
+  - security_groups/ # Web + SSH security groups
+  - ec2_app/ # Single EC2 instance (wraps terraform-aws-modules/ec2-instance)
+  - s3_static_site/ # Static S3 website (wraps terraform-aws-modules/s3-bucket)
+- environments/
+  - dev/
+    - main.tf # Root module wiring dev environment together
+    - variables.tf # Dev-specific variables (region, CIDRs, sizes)
+    - backend.tf # Remote state backend (S3 + DynamoDB)
+  - prod/
 
 
 Each environment is a separate root module with its own Terraform state, while the `modules` directory holds reusable building blocks.
