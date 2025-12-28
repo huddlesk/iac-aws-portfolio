@@ -8,7 +8,7 @@ trigger:
 
 stages:
 - stage: Build
-  displayName: 'Terraform Plan'
+  displayName: 'Terraform Planning and Code Build'
   jobs:
   - job: Plan
     pool:
@@ -43,17 +43,35 @@ stages:
         PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/dev/tfplan'
         ArtifactName: 'tfplan'
         publishLocation: 'Container'
-    - task: TerraformTaskV4@4
-      name: planShow  # Logs detailed output
-      inputs:
-        provider: 'aws'
-        command: 'show'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-        commandOptions: 'tfplan'
-        outputTo: 'console'
-        outputFormat: 'default'
-        environmentServiceNameAWS: 'aws-tf-connection'
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-        artifact: 'plan-logs'
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: Apply
+    environment: 'AWS Portfolio Dev'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'tfplan'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+              backendServiceAWS: 'aws-tf-connection'
+              backendAWSBucketName: 'huddlesk-tf-state-bucket'
+              backendAWSKey: 'environments/dev/terraform.tfstate'
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              commandOptions: '$(System.ArtifactsDirectory)/tfplan'
+              environmentServiceNameAWS: 'aws-tf-connection'
