@@ -18,9 +18,17 @@ steps:
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
 
-- task: Bash@3
+- task: TerraformTask@5
   inputs:
-    targetType: 'inline'
-    script: |
-      sudo apt-get install terraform
-      echo $(terraform --version)
+    provider: 'aws'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+    environmentServiceNameAWSConnection: 'aws-tf-connection'  # Injects AWS env vars
+  env:
+    AWS_DEFAULT_REGION: 'us-east-1'  # Optional override
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'aws'
+    command: 'plan'
+    environmentServiceNameAWSConnection: 'aws-tf-connection'
+    commandOptions: '-out=tfplan'
