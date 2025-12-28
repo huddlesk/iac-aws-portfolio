@@ -46,10 +46,13 @@ stages:
     - task: TerraformTaskV4@4
       name: planShow  # Logs detailed output
       inputs:
+        provider: 'aws'
         command: 'show'
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-        environmentServiceNameAWS: 'aws-tf-connection'
         commandOptions: 'tfplan'
+        outputTo: 'console'
+        outputFormat: 'default'
+        environmentServiceNameAWS: 'aws-tf-connection'
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
