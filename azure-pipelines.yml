@@ -22,5 +22,5 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      apt install terraform
+      sudo apt-get install terraform
       echo $(terraform --version)
