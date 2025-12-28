@@ -34,3 +34,8 @@ steps:
     TF_VAR_unique_suffix: $(unique_suffix)
     TF_VAR_key_name: $(key_name)
     AWS_DEFAULT_REGION: 'us-east-1'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/dev/tfplan'
+    ArtifactName: 'tfplan'
+    publishLocation: 'Container'
