@@ -8,6 +8,8 @@ trigger:
 
 stages:
 - stage: Build
+  variables: 
+  - group: "aws-dev-tfvars"
   displayName: 'Terraform Planning and Code Build'
   jobs:
   - job: Plan
