@@ -6,21 +6,85 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+- stage: Build
+  variables: 
+  - group: "aws-dev-tfvars"
+  displayName: 'Terraform Planning and Code Build'
+  jobs:
+  - job: Plan
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTask@5
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+        backendServiceAWS: 'aws-tf-connection'
+        backendAWSBucketName: 'huddlesk-tf-state-bucket'
+        backendAWSKey: 'environments/dev/terraform.tfstate'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+        commandOptions: '-out=tfplan'
+        environmentServiceNameAWS: 'aws-tf-connection'
+      env:
+        TF_VAR_env: $(env)
+        TF_VAR_ami_id: $(ami_id)
+        TF_VAR_unique_suffix: $(unique_suffix)
+        TF_VAR_key_name: $(key_name)
+        AWS_DEFAULT_REGION: 'us-east-1'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/dev/tfplan'
+        ArtifactName: 'tfplan'
+        publishLocation: 'Container'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      sudo apt-get install terraform
-      echo $(terraform --version)
+- stage: Deploy
+  displayName: "Terraform Apply and Configure with Ansible"
+  dependsOn: Build
+  jobs:
+  - deployment: Apply
+    environment: 'AWS Portfolio Dev'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: 'latest'
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'tfplan'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+              backendServiceAWS: 'aws-tf-connection'
+              backendAWSBucketName: 'huddlesk-tf-state-bucket'
+              backendAWSKey: 'environments/dev/terraform.tfstate'
+          - task: CmdLine@2
+            inputs:
+              script: 'ls /home/vsts/work/1/a/tfplan'
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+              commandOptions: '$(System.ArtifactsDirectory)/tfplan/tfplan'
+              environmentServiceNameAWS: 'aws-tf-connection'
+            env:
+              AWS_DEFAULT_REGION: 'us-east-1'
