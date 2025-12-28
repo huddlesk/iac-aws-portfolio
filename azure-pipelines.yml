@@ -10,13 +10,6 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
 - task: TerraformInstaller@1
   inputs:
     terraformVersion: 'latest'
@@ -33,5 +26,10 @@ steps:
     provider: 'aws'
     command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-    commandOptions: '-out=tfplan -var ''env=dev'' -var ''ami_id=ami-068c0051b15cdb816'' -var ''unique_suffix=huddlesk'' -var ''key_name=huddlesk-personal-ed25519'''
+    commandOptions: '-out=tfplan'
     environmentServiceNameAWS: 'aws-tf-connection'
+  env:
+    TF_VAR_env: dev
+    TF_VAR_ami_id: ami-068c0051b15cdb816
+    TF_VAR_unique_suffix: huddlesk
+    TF_VAR_key_name: huddlesk-personal-ed25519
