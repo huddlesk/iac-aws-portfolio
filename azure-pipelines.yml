@@ -29,8 +29,8 @@ steps:
     commandOptions: '-out=tfplan'
     environmentServiceNameAWS: 'aws-tf-connection'
   env:
-    TF_VAR_env: dev
-    TF_VAR_ami_id: ami-068c0051b15cdb816
-    TF_VAR_unique_suffix: huddlesk
-    TF_VAR_key_name: huddlesk-personal-ed25519
+    TF_VAR_env: $(env)
+    TF_VAR_ami_id: $(ami_id)
+    TF_VAR_unique_suffix: $(unique_suffix)
+    TF_VAR_key_name: $(key_name)
     AWS_DEFAULT_REGION: 'us-east-1'
