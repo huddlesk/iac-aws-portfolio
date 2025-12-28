@@ -33,5 +33,5 @@ steps:
     provider: 'aws'
     command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-    commandOptions: '-out=tfplan'
+    commandOptions: '-out=tfplan -var ''env=dev'' -var ''ami_id=ami-068c0051b15cdb816'' -var ''unique_suffix=huddlesk'' -var ''key_name=huddlesk-personal-ed25519'''
     environmentServiceNameAWS: 'aws-tf-connection'
