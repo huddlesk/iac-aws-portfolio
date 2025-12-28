@@ -17,13 +17,15 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
-
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: 'latest'
 - task: TerraformTask@5
   inputs:
     provider: 'aws'
     command: 'init'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-    environmentServiceNameAWSConnection: 'aws-tf-connection'  # Injects AWS env vars
+    backendServiceAWS: 'aws-tf-connection'
   env:
     AWS_DEFAULT_REGION: 'us-east-1'  # Optional override
 - task: TerraformTaskV4@4
