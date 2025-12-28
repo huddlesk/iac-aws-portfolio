@@ -22,6 +22,7 @@ steps:
     terraformVersion: 'latest'
 - task: TerraformTask@5
   inputs:
+    provider: 'aws'
     command: 'init'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
     environmentServiceNameAWSConnection: 'aws-tf-connection'
