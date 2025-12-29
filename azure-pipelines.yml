@@ -7,7 +7,7 @@ trigger:
 - main
 
 stages:
-- stage: Build
+- stage: Build-Dev
   variables: 
   - group: "aws-dev-tfvars"
   displayName: 'Terraform Planning and Code Build'
@@ -23,7 +23,7 @@ stages:
       inputs:
         provider: 'aws'
         command: 'init'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
         backendServiceAWS: 'aws-tf-connection'
         backendAWSBucketName: 'huddlesk-tf-state-bucket'
         backendAWSKey: 'environments/dev/terraform.tfstate'
@@ -31,7 +31,7 @@ stages:
       inputs:
         provider: 'aws'
         command: 'plan'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
         commandOptions: '-out=tfplan'
         environmentServiceNameAWS: 'aws-tf-connection'
       env:
@@ -42,11 +42,11 @@ stages:
         AWS_DEFAULT_REGION: 'us-east-1'
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/dev/tfplan'
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)/tfplan'
         ArtifactName: 'tfplan'
         publishLocation: 'Container'
 
-- stage: Deploy
+- stage: Deploy-Dev
   displayName: "Terraform Apply and Configure with Ansible"
   dependsOn: Build
   jobs:
@@ -72,7 +72,7 @@ stages:
             inputs:
               provider: 'aws'
               command: 'init'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               backendServiceAWS: 'aws-tf-connection'
               backendAWSBucketName: 'huddlesk-tf-state-bucket'
               backendAWSKey: 'environments/dev/terraform.tfstate'
@@ -83,7 +83,7 @@ stages:
             inputs:
               provider: 'aws'
               command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/'
               commandOptions: '$(System.ArtifactsDirectory)/tfplan/tfplan'
               environmentServiceNameAWS: 'aws-tf-connection'
             env:
@@ -102,13 +102,53 @@ stages:
           sshKeySecureFile: 'id_ed25519'
       - task: CmdLine@2
         inputs:
-          script: 'cat $(System.DefaultWorkingDirectory)/ansible/inventory-dev.ini'
+          script: 'cat $(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
       - task: Ansible@0
         inputs:
           ansibleInterface: 'agentMachine'
-          playbookPathOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/site-dev.yml'
+          playbookPathOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/site.yml'
           inventoriesAgentMachine: 'file'
-          inventoryFileOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/inventory-dev.ini'
+          inventoryFileOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
           failOnStdErr: false
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
+
+- stage: Build-Prod
+  dependsOn: Build-Dev
+  variables: 
+  - group: "aws-prod-tfvars"
+  displayName: 'Terraform Planning and Code Build'
+  jobs:
+  - job: Plan
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTask@5
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
+        backendServiceAWS: 'aws-tf-connection'
+        backendAWSBucketName: 'huddlesk-tf-state-bucket'
+        backendAWSKey: 'environments/dev/terraform.tfstate'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
+        commandOptions: '-out=tfplan'
+        environmentServiceNameAWS: 'aws-tf-connection'
+      env:
+        TF_VAR_env: $(env)
+        TF_VAR_ami_id: $(ami_id)
+        TF_VAR_unique_suffix: $(unique_suffix)
+        TF_VAR_key_name: $(key_name)
+        AWS_DEFAULT_REGION: 'us-east-1'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)/tfplan'
+        ArtifactName: 'tfplan'
+        publishLocation: 'Container'
