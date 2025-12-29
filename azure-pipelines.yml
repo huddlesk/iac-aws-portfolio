@@ -84,5 +84,5 @@ stages:
               provider: 'aws'
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
-              commandOptions: '$(System.ArtifactsDirectory)/tfplan'
+              commandOptions: '$(System.ArtifactsDirectory)/tfplan/tfplan'
               environmentServiceNameAWS: 'aws-tf-connection'
