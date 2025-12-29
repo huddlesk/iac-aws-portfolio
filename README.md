@@ -1,6 +1,6 @@
 # IaC AWS Portfolio Environment (Terraform/Ansible)
 
-This repository defines a small, production‑style AWS environment using Terraform and Ansible, designed to showcase Infrastructure as Code, modular design, and CI/CD‑friendly structure for Release, DevOps and Cloud roles.
+This repository defines a small, production‑style AWS environment using Terraform and Ansible.  The code can be built and deployed using Azure DevOps Pipelines.  It is designed to showcase Infrastructure as Code, modular design, and CI/CD‑friendly structure for Release, DevOps and Cloud roles.
 
 ## Architecture Overview
 
@@ -63,6 +63,10 @@ The `ansible/` directory handles configuration management for the provisioned EC
 - **site-dev.yml**: The main playbook that orchestrates the configuration for the development environment.
 - **roles/**: Contains reusable Ansible roles.
     - **webserver**: Installs Nginx, Git, and deploys the static site content to the web server.
+
+## Pipeline Structure
+
+The **azure-pipeline.yml** defines a two stage CI/CD process.  In the first stage (Plan), Terraform is initialized and a plan is generated for the infrastructure provisioning.  In the second stage (Deploy), the Terraform plan from the build is applied to the respective environment and Ansible is triggered to configure the nginx server with a site to host.
 
 ## What This Demonstrates
 
