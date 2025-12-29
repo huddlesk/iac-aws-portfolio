@@ -48,7 +48,7 @@ stages:
 
 - stage: Deploy_Dev
   displayName: "Terraform Apply and Configure with Ansible"
-  dependsOn: Build
+  dependsOn: Build_Dev
   jobs:
   - deployment: Apply_Terraform
     environment: 'AWS Portfolio Dev'
