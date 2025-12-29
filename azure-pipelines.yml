@@ -7,7 +7,7 @@ trigger:
 - main
 
 stages:
-- stage: Build-Dev
+- stage: Build_Dev
   variables: 
   - group: "aws-dev-tfvars"
   displayName: 'Terraform Planning and Code Build'
@@ -46,7 +46,7 @@ stages:
         ArtifactName: 'tfplan'
         publishLocation: 'Container'
 
-- stage: Deploy-Dev
+- stage: Deploy_Dev
   displayName: "Terraform Apply and Configure with Ansible"
   dependsOn: Build
   jobs:
@@ -113,8 +113,8 @@ stages:
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
 
-- stage: Build-Prod
-  dependsOn: Build-Dev
+- stage: Build_Prod
+  dependsOn: Build_Dev
   variables: 
   - group: "aws-prod-tfvars"
   displayName: 'Terraform Planning and Code Build'
