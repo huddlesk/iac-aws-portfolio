@@ -76,9 +76,13 @@ stages:
               backendServiceAWS: 'aws-tf-connection'
               backendAWSBucketName: 'huddlesk-tf-state-bucket'
               backendAWSKey: 'environments/dev/terraform.tfstate'
+          - task: CmdLine@2
+            inputs:
+              script: 'ls /home/vsts/work/1/a/tfplan'
           - task: TerraformTaskV4@4
             inputs:
               provider: 'aws'
               command: 'apply'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/dev'
               commandOptions: '$(System.ArtifactsDirectory)/tfplan'
               environmentServiceNameAWS: 'aws-tf-connection'
