@@ -10,7 +10,7 @@ stages:
 - stage: Build_Dev
   variables: 
   - group: "aws-dev-tfvars"
-  displayName: 'Terraform Planning and Code Build'
+  displayName: 'Dev - Terraform Planning and Code Build'
   jobs:
   - job: Plan
     pool:
@@ -47,7 +47,7 @@ stages:
         publishLocation: 'Container'
 
 - stage: Deploy_Dev
-  displayName: "Terraform Apply and Configure with Ansible"
+  displayName: "Dev - Terraform Apply and Configure with Ansible"
   dependsOn: Build_Dev
   jobs:
   - deployment: Apply_Terraform
@@ -117,7 +117,7 @@ stages:
   dependsOn: Build_Dev
   variables: 
   - group: "aws-prod-tfvars"
-  displayName: 'Terraform Planning and Code Build'
+  displayName: 'Prod - Terraform Planning and Code Build'
   jobs:
   - job: Plan
     pool:
