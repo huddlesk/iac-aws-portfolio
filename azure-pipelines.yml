@@ -26,7 +26,7 @@ stages:
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
         backendServiceAWS: 'aws-tf-connection'
         backendAWSBucketName: 'huddlesk-tf-state-bucket'
-        backendAWSKey: 'environments/dev/terraform.tfstate'
+        backendAWSKey: 'environments/$(env)/terraform.tfstate'
     - task: TerraformTaskV4@4
       inputs:
         provider: 'aws'
@@ -75,7 +75,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               backendServiceAWS: 'aws-tf-connection'
               backendAWSBucketName: 'huddlesk-tf-state-bucket'
-              backendAWSKey: 'environments/dev/terraform.tfstate'
+              backendAWSKey: 'environments/$(env)/terraform.tfstate'
           - task: CmdLine@2
             inputs:
               script: 'ls /home/vsts/work/1/a/tfplan'
@@ -133,7 +133,7 @@ stages:
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
         backendServiceAWS: 'aws-tf-connection'
         backendAWSBucketName: 'huddlesk-tf-state-bucket'
-        backendAWSKey: 'environments/dev/terraform.tfstate'
+        backendAWSKey: 'environments/$(env)/terraform.tfstate'
     - task: TerraformTaskV4@4
       inputs:
         provider: 'aws'
