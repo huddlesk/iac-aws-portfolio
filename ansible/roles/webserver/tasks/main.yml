@@ -29,7 +29,7 @@
     repo: "{{ repo_url }}"
     dest: "{{ app_root }}"
     version: main
-    update: no
+    update: yes
     accept_hostkey: yes
   register: portfolio_clone
 
