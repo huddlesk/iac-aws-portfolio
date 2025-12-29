@@ -89,6 +89,7 @@ stages:
             env:
               AWS_DEFAULT_REGION: 'us-east-1'
   - job: Ansible_Configuration
+    dependsOn: Apply_Terraform
     pool:
         vmImage: 'ubuntu-latest'
     steps:

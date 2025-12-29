@@ -23,6 +23,12 @@
     owner: "{{webserver_owner}}"
     group: "{{webserver_owner}}"
     mode: "0755"
+
+- name: Set git repo to accept changes
+  ansible.builtin.git_config:
+    scope: global
+    name: "safe.directory"
+    value: "{{ app_root }}"
     
 - name: Clone portfolio repo
   ansible.builtin.git:
