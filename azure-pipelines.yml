@@ -108,3 +108,5 @@ stages:
           playbookPathOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/site-dev.yml'
           inventoriesAgentMachine: 'file'
           inventoryFileOnAgentMachine: '$(System.DefaultWorkingDirectory)/ansible/inventory-dev.ini'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
