@@ -37,6 +37,7 @@
     version: main
     update: yes
     accept_hostkey: yes
+    force: yes
   register: portfolio_clone
 
 - name: Set permissions on app root
