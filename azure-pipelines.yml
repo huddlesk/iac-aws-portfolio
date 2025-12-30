@@ -100,9 +100,9 @@ stages:
                 ec2_ip=$(terraform output -raw ec2_public_ip)
                 echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$ec2_ip"
                 echo "command $ec2_ip"
-                echo "var $(ec2_public_ip)"
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
+          - bash: echo "$(ec2_public_ip)"
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     pool:
