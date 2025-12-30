@@ -97,16 +97,15 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                ec2_ip=$(terraform output -raw ec2_public_ip)
-                echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$ec2_ip"
-                echo "command $ec2_ip"
+                ec2_public_ip=$(terraform output -raw ec2_public_ip)
+                echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$ec2_public_ip"
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
-          - bash: env | sort
+
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     variables:
-      ec2: $[dependencies.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
+      ec2_public_ip: $[stageDependencies.Deploy_Dev.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
     pool:
         vmImage: 'ubuntu-latest'
     steps:
@@ -129,7 +128,7 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-            echo "ip is $EC2"
+            echo IP=$EC2_PUBLIC_IP
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
           failOnStderr: true
       - task: Ansible@0
