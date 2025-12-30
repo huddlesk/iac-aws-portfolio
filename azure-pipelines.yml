@@ -93,24 +93,32 @@ stages:
               artifact: 'inventory-$(env)'
               publishLocation: 'pipeline'
           - task: Bash@3
-            name: tfOutputs
+            name: deployOutput
             inputs:
               targetType: 'inline'
               script: |
                 ec2_public_ip=$(terraform output -raw ec2_public_ip)
-                echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$ec2_public_ip"
+                echo "$ec2_public_ip" >> ec2_public_ip.txt
                 echo $ec2_public_ip
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
+          - publish: ec2_public_ip.txt
+            artifact: deployOutput
 
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
-    variables:
-      #ec2_public_ip: $[stageDependencies.Deploy_Dev.Apply_Terraform.tfOutputs.outputs['tfOutputs.ec2_public_ip']]
-      ec2_public_ip: $[dependencies.Apply_Terraform.outputs['Deploy_AWS_Portfolio_Dev.tfOutputs.ec2_public_ip']]
     pool:
         vmImage: 'ubuntu-latest'
     steps:
+      - download: current
+        artifact: deployOutput
+      - bash: | 
+          cat /home/vsts/work/1/deployOutput/ec2_public_ip.txt
+          val=$(cat /home/vsts/work/1/deployOutput/ec2_public_ip.txt)
+          echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$val"
+        name: output
+      - bash: |
+          echo "$(output.ec2_public_ip)"
       - checkout: self
       - task: InstallSSHKey@0
         inputs:
@@ -147,15 +155,12 @@ stages:
   dependsOn: Build_Dev
   variables: 
   - group: "aws-prod-tfvars"
-  - name: ec2_public_ip
-    value: $[stageDependencies.Deploy_Dev.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
   displayName: 'Prod - Terraform Planning and Code Build'
   jobs:
   - job: Plan
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - bash: echo $EC2_PUBLIC_IP
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
@@ -233,6 +238,7 @@ stages:
               targetPath: '$(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
               artifact: 'inventory-$(env)'
               publishLocation: 'pipeline'
+              
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     pool:
