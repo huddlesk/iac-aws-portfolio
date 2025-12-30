@@ -127,8 +127,7 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-            ip="$(Apply_Terraform.tfOutputs.ec2_public_ip)"
-            echo ip
+            echo "ip is $EC2_PUBLIC_IP"
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
           failOnStderr: true
       - task: Ansible@0
