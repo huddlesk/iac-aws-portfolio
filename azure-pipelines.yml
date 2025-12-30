@@ -102,7 +102,7 @@ stages:
                 echo "command $ec2_ip"
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
-          - bash: echo "$(ec2_public_ip)"
+          - bash: env | sort
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     pool:
