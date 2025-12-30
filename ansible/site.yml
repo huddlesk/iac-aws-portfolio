@@ -1,5 +1,5 @@
 ---
-- hosts: ec2_instances_dev
+- hosts: ec2_instances
   become: true
   roles:
     - webserver
