@@ -2,7 +2,8 @@ terraform {
   backend "s3" {
     bucket = "huddlesk-tf-state-bucket"
     key = "environments/dev/terraform.tfstate"
-    dynamodb_table = "terraform-state-lock"
+    #dynamodb_table = "terraform-state-lock"
+    use_lockfile   = true 
     region = "us-east-1"
     encrypt = true
   }
