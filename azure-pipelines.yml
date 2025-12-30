@@ -111,9 +111,10 @@ stages:
     pool:
         vmImage: 'ubuntu-latest'
     steps:
-      - download: current
-        artifact: deployOutput
-        target: $(Agent.TempDirectory)
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: deployOutput
+          targetPath: $(Agent.TempDirectory)/deployOutput
       - bash: | 
           cat $(Agent.TempDirectory)/deployOutput/ec2_public_ip.txt
           val=$(cat $(Agent.TempDirectory)/deployOutput/ec2_public_ip.txt)
