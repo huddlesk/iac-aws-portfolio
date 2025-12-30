@@ -121,9 +121,14 @@ stages:
       - task: CmdLine@2
         inputs:
           script: 'cat $(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
-      - task: CmdLine@2
+      - task: Bash@3
         inputs:
-          script: 'echo $(Apply_Terraform.tfOutputs.ec2_public_ip)'
+          targetType: 'inline'
+          script: |
+            ip="$(Apply_Terraform.tfOutputs.ec2_public_ip)"
+            echo ip
+          workingDirectory: 'workingDirectory: ''$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'''
+          failOnStderr: true
       - task: Ansible@0
         inputs:
           ansibleInterface: 'agentMachine'
