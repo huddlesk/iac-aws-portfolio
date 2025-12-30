@@ -105,6 +105,8 @@ stages:
           - bash: env | sort
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
+    variables:
+      ec2: $[dependencies.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
     pool:
         vmImage: 'ubuntu-latest'
     steps:
