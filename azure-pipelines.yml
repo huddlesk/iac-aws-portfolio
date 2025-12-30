@@ -113,11 +113,10 @@ stages:
     steps:
       - download: current
         artifact: deployOutput
-        target: $(Agent.TempDirectory)/ec2_public_ip.txt
+        target: $(Agent.TempDirectory)
       - bash: | 
-          cat $(Agent.TempDirectory)/ec2_public_ip.txt
           cat $(Agent.TempDirectory)/deployOutput/ec2_public_ip.txt
-          val=$(cat /home/vsts/work/1/deployOutput/ec2_public_ip.txt)
+          val=$(cat $(Agent.TempDirectory)/deployOutput/ec2_public_ip.txt)
           echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$val"
         name: output
       - bash: |
