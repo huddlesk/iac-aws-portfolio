@@ -1,7 +1,7 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# IAC-AWS-PORTFOLIO
+# This is a single pipeline to handle the entire release
+# cycle.  It will build and deploy on dev and then prod
+# Review checkpoints are there to confirm artifacts before deployment 
 
 trigger:
 - main
@@ -43,7 +43,7 @@ stages:
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)/tfplan'
-        ArtifactName: 'tfplan'
+        ArtifactName: 'tfplan-$(env)'
         publishLocation: 'Container'
 
 - stage: Deploy_Dev
@@ -66,7 +66,7 @@ stages:
             inputs:
               buildType: 'current'
               downloadType: 'single'
-              artifactName: 'tfplan'
+              artifactName: 'tfplan-$(env)'
               downloadPath: '$(System.ArtifactsDirectory)'
           - task: TerraformTaskV4@4
             inputs:
@@ -76,15 +76,12 @@ stages:
               backendServiceAWS: 'aws-tf-connection'
               backendAWSBucketName: 'huddlesk-tf-state-bucket'
               backendAWSKey: 'environments/$(env)/terraform.tfstate'
-          - task: CmdLine@2
-            inputs:
-              script: 'ls /home/vsts/work/1/a/tfplan'
           - task: TerraformTaskV4@4
             inputs:
               provider: 'aws'
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/'
-              commandOptions: '$(System.ArtifactsDirectory)/tfplan/tfplan'
+              commandOptions: '$(System.ArtifactsDirectory)/tfplan-$(env)/tfplan-$(env)'
               environmentServiceNameAWS: 'aws-tf-connection'
             env:
               AWS_DEFAULT_REGION: 'us-east-1'
@@ -150,5 +147,5 @@ stages:
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)/tfplan'
-        ArtifactName: 'tfplan'
+        ArtifactName: 'tfplan-$(env)'
         publishLocation: 'Container'
