@@ -47,6 +47,8 @@ stages:
         publishLocation: 'Container'
 
 - stage: Deploy_Dev
+  variables: 
+  - group: "aws-dev-tfvars"
   displayName: "Dev - Terraform Apply and Configure with Ansible"
   dependsOn: Build_Dev
   jobs:
@@ -152,6 +154,8 @@ stages:
 
 - stage: Deploy_Prod
   displayName: "Prod - Terraform Apply and Configure with Ansible"
+  variables: 
+  - group: "aws-prod-tfvars"
   trigger: manual
   #dependsOn: Build_Prod
   jobs:
