@@ -98,11 +98,12 @@ stages:
               targetType: 'inline'
               script: |
                 ec2_public_ip=$(terraform output -raw ec2_public_ip)
-                echo "$ec2_public_ip" >> ec2_public_ip.txt
+                echo "$ec2_public_ip" > $(Agent.TempDirectory)/ec2_public_ip.txt
                 echo $ec2_public_ip
+                cat ec2_public_ip.txt
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
-          - publish: ec2_public_ip.txt
+          - publish: $(Agent.TempDirectory)/ec2_public_ip.txt
             artifact: deployOutput
 
   - job: Configure_Ansible
@@ -112,8 +113,10 @@ stages:
     steps:
       - download: current
         artifact: deployOutput
+        target: $(Agent.TempDirectory)/ec2_public_ip.txt
       - bash: | 
-          cat /home/vsts/work/1/deployOutput/ec2_public_ip.txt
+          cat $(Agent.TempDirectory)/ec2_public_ip.txt
+          cat $(Agent.TempDirectory)/deployOutput/ec2_public_ip.txt
           val=$(cat /home/vsts/work/1/deployOutput/ec2_public_ip.txt)
           echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$val"
         name: output
