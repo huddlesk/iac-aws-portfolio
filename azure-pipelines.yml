@@ -92,6 +92,15 @@ stages:
               targetPath: '$(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
               artifact: 'inventory-$(env)'
               publishLocation: 'pipeline'
+          - task: Bash@3
+            name: tfOutputs
+            inputs:
+              targetType: 'inline'
+              script: |
+                ec2_ip=$(terraform output -raw ec2_public_ip)
+                echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$ec2_ip"
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
+              failOnStderr: true
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     pool:
@@ -112,6 +121,9 @@ stages:
       - task: CmdLine@2
         inputs:
           script: 'cat $(System.DefaultWorkingDirectory)/ansible/inventory-$(env).ini'
+      - task: CmdLine@2
+        inputs:
+          script: 'echo $(Apply_Terraform.tfOutputs.ec2_public_ip)'
       - task: Ansible@0
         inputs:
           ansibleInterface: 'agentMachine'
