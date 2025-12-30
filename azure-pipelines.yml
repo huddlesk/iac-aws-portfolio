@@ -107,7 +107,7 @@ stages:
     dependsOn: Apply_Terraform
     variables:
       #ec2_public_ip: $[stageDependencies.Deploy_Dev.Apply_Terraform.tfOutputs.outputs['tfOutputs.ec2_public_ip']]
-      ec2_public_ip: $[dependencies.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
+      ec2_public_ip: $[dependencies.Apply_Terraform.outputs['Deploy_AWS_Portfolio_Dev.tfOutputs.ec2_public_ip']]
     pool:
         vmImage: 'ubuntu-latest'
     steps:
