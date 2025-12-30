@@ -106,7 +106,8 @@ stages:
   - job: Configure_Ansible
     dependsOn: Apply_Terraform
     variables:
-      ec2_public_ip: $[stageDependencies.Deploy_Dev.Apply_Terraform.tfOutputs.outputs['tfOutputs.ec2_public_ip']]
+      #ec2_public_ip: $[stageDependencies.Deploy_Dev.Apply_Terraform.tfOutputs.outputs['tfOutputs.ec2_public_ip']]
+      ec2_public_ip: $[dependencies.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
     pool:
         vmImage: 'ubuntu-latest'
     steps:
@@ -146,12 +147,15 @@ stages:
   dependsOn: Build_Dev
   variables: 
   - group: "aws-prod-tfvars"
+  - name: ec2_public_ip
+    value: $[stageDependencies.Deploy_Dev.Apply_Terraform.outputs['tfOutputs.ec2_public_ip']]
   displayName: 'Prod - Terraform Planning and Code Build'
   jobs:
   - job: Plan
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - bash: echo $EC2_PUBLIC_IP
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
