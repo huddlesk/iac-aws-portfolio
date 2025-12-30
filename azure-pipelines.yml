@@ -153,7 +153,7 @@ stages:
 - stage: Deploy_Prod
   displayName: "Prod - Terraform Apply and Configure with Ansible"
   trigger: manual
-  dependsOn: Build_Prod
+  #dependsOn: Build_Prod
   jobs:
   - deployment: Apply_Terraform
     environment: 'AWS Portfolio Prod'
