@@ -121,7 +121,7 @@ stages:
           echo "##vso[task.setvariable variable=ec2_public_ip;isOutput=true]$val"
         name: output
       - bash: |
-          echo "$(output.ec2_public_ip)"
+          echo Public IP is: "$(output.ec2_public_ip)"
       - checkout: self
       - task: InstallSSHKey@0
         inputs:
