@@ -3,8 +3,8 @@
 # cycle.  It will build and deploy on dev and then prod
 # Review checkpoints are there to confirm artifacts before deployment 
 
-trigger:
-- main
+trigger: none
+#- main
 
 stages:
 - stage: Build_Dev
@@ -82,7 +82,7 @@ stages:
             inputs:
               provider: 'aws'
               command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               commandOptions: '$(System.ArtifactsDirectory)/tfplan-$(env)/tfplan'
               environmentServiceNameAWS: 'aws-tf-connection'
             env:
@@ -189,7 +189,7 @@ stages:
             inputs:
               provider: 'aws'
               command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               commandOptions: '$(System.ArtifactsDirectory)/tfplan-$(env)/tfplan'
               environmentServiceNameAWS: 'aws-tf-connection'
             env:
