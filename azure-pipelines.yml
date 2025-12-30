@@ -100,7 +100,7 @@ stages:
                 ec2_public_ip=$(terraform output -raw ec2_public_ip)
                 echo "$ec2_public_ip" > $(Agent.TempDirectory)/ec2_public_ip.txt
                 echo $ec2_public_ip
-                cat ec2_public_ip.txt
+                cat $(Agent.TempDirectory)/ec2_public_ip.txt
               workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/environments/$(env)'
               failOnStderr: true
           - publish: $(Agent.TempDirectory)/ec2_public_ip.txt
