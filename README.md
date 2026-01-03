@@ -14,22 +14,30 @@ The environment models a simple web application stack:
 The code is organized into reusable Terraform modules and environment‑specific root configurations (`dev`, `prod`).
 
 ### High‑Level Design
+The architecture follows a simplistic design to avoid personal costs for services.  This is basic infrastructure diagram followed by a detailed explanation of the components.
 
-- **Network**
-  - 1 VPC (e.g., `10.0.0.0/16`)
-  - 1 public subnet (e.g., `10.0.1.0/24`) for the EC2 app instance
-  - 1 private subnet (e.g., `10.0.2.0/24`) reserved for future backend services
-  - Internet Gateway and a NAT Gateway for outbound internet access from private subnets
-- **Compute**
-  - 1 EC2 instance (t3.micro by default) running in the public subnet
-  - User data script to bootstrap the application (e.g., simple web page)
-- **Static Website**
-  - 1 S3 bucket configured for static website hosting (index + error pages)
-- **Security**
-  - Web security group allowing HTTP/HTTPS from the internet
-  - SSH security group allowing SSH from a configurable CIDR range
-  - Default outbound egress to the internet for updates and package downloads
+ ![Infrastructure Architecture](docs/IAC-AWS-PORTFOLIO%20Infrastructure%20Diagram.png)
+ 
 
+**Network**
+- 1 VPC (e.g., `10.0.0.0/16`)
+- 1 public subnet (e.g., `10.0.1.0/24`) for the EC2 app instance
+- 1 private subnet (e.g., `10.0.2.0/24`) reserved for future backend services
+- Internet Gateway and a NAT Gateway for outbound internet access from private subnets
+
+**Compute**
+- 1 EC2 instance (t3.micro by default) running in the public subnet
+- User data script to bootstrap the application (e.g., simple web page)
+
+**Static Website**
+- 1 S3 bucket configured for static website hosting (index + error pages)
+
+**Security**
+- Web security group allowing HTTP/HTTPS from the internet
+- SSH security group allowing SSH from a configurable CIDR range
+- Default outbound egress to the internet for updates and package downloads
+
+ 
 ## Terraform Code Structure
 
 The `terraform/` directory is organized into three main layers to support modularity and state management:
