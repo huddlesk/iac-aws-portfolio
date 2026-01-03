@@ -18,7 +18,6 @@ The architecture follows a simplistic design to avoid personal costs for service
 
  ![Infrastructure Architecture](docs/IAC-AWS-PORTFOLIO%20Infrastructure%20Diagram.png)
  
-
 **Network**
 - 1 VPC (e.g., `10.0.0.0/16`)
 - 1 public subnet (e.g., `10.0.1.0/24`) for the EC2 app instance
