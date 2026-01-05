@@ -1,0 +1,6 @@
+# These are the expected variable values for the dev environment
+# Structure your own terraform.tfvars file accordingly
+env = "dev"
+unique_suffix = "huddlesk"
+ami_id = "ami-068c0051b15cdb816"
+key_name = "huddlesk-personal-ed25519"
