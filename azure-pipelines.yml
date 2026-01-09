@@ -17,9 +17,11 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - task: TerraformInstaller@1
+      displayName: "Terraform Installation"
       inputs:
         terraformVersion: 'latest'
     - task: TerraformTask@5
+      displayName: "Terraform Initiation"
       inputs:
         provider: 'aws'
         command: 'init'
