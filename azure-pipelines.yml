@@ -29,6 +29,7 @@ stages:
         backendServiceAWS: 'aws-tf-connection'
         backendAWSBucketName: 'huddlesk-tf-state-bucket'
         backendAWSKey: 'environments/$(env)/terraform.tfstate'
+        initArgs: '--upgrade'
     - task: TerraformTaskV4@4
       displayName: "Terraform Planning"
       inputs:
@@ -188,6 +189,7 @@ stages:
         backendServiceAWS: 'aws-tf-connection'
         backendAWSBucketName: 'huddlesk-tf-state-bucket'
         backendAWSKey: 'environments/$(env)/terraform.tfstate'
+        initArgs: '--upgrade'
     - task: TerraformTaskV4@4
       displayName: "Terraform Planning"
       inputs:
@@ -245,6 +247,7 @@ stages:
               backendServiceAWS: 'aws-tf-connection'
               backendAWSBucketName: 'huddlesk-tf-state-bucket'
               backendAWSKey: 'environments/$(env)/terraform.tfstate'
+              initArgs: '--upgrade'
           - task: TerraformTaskV4@4
             displayName: "Terraform Apply"
             inputs:
