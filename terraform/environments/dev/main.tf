@@ -26,7 +26,8 @@ module "security_groups" {
 
 module "ec2_app" {
   source            = "../../modules/ec2_app"
-  name              = "${var.env}-app"
+  count = 3
+  name              = "${var.env}-app-${count.index + 1}"
   ami_id            = var.ami_id
   instance_type     = var.instance_type
   key_name          = var.key_name
@@ -46,7 +47,7 @@ module "s3_static_site" {
 }
 
 output "ec2_public_ip" {
-  value = module.ec2_app.public_ip
+  value = module.ec2_app[*].public_ip
 }
 
 output "static_site_url" {
@@ -55,7 +56,7 @@ output "static_site_url" {
 
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/ansible_inventory.tpl", {
-    ec2_ips = [module.ec2_app.public_ip]
+    ec2_ips = module.ec2_app[*].public_ip
     env = var.env
   })
   filename = "${path.module}/../../../ansible/inventory-${var.env}.ini"

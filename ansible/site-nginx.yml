@@ -1,0 +1,11 @@
+---
+- hosts: ec2_instances
+  become: true
+  roles:
+    - webserver
+
+---
+- name: Install Docker on Amazon Linux
+  hosts: amazon-linux-hosts
+  become: yes
+  tasks:
