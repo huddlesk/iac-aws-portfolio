@@ -3,7 +3,7 @@ module "s3_bucket" {
   
 
   bucket = var.bucket_name
-  acl = "public-read"
+#  acl = "public-read"
 
   website = {
     index_document = "index.html"
