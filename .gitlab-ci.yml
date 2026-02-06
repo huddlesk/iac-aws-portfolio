@@ -1,0 +1,14 @@
+image: astral/uv:0.10-python3.13-alpine
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  #PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+before_script:
+  - uvx ansible --version
+  #- uvx ansible-playbook -i inventory.ini site.yml
+
+test:
+  script:
+    - uv python list
