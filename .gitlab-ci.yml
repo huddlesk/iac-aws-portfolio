@@ -15,7 +15,7 @@ build:
   variables:
   #PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
     ANSIBLE_HOST_KEY_CHECKING: False
+    ANSIBLE_SSH_PRIVATE_KEY_FILE: "$CI_PROJECT_DIR/.secure_files/id_ed25519"
   script:
-    - mv .secure_files/id_ed25519 ~/.ssh/
     - cd ansible
     - ansible-playbook -i inventory-dev.ini site.yml --check
