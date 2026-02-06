@@ -7,6 +7,7 @@ variables:
 
 before_script:
   - uv tool install --with-executables-from ansible-core,ansible-lint ansible
+  - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   #- uvx ansible --version
   #- uvx ansible-playbook -i inventory.ini site.yml
 
@@ -14,5 +15,7 @@ before_script:
 build:
   when: manual
   script:
+    - ./download-secure-files
+    - mv .secure_files/id_ed25519 ~/.ssh/
     - cd ansible
     - ansible-playbook -i inventory-dev.ini site.yml --check
