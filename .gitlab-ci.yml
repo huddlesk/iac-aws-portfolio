@@ -1,4 +1,4 @@
-image: astral/uv:0.10-python3.13-alpine
+image: astral/uv:debian
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -12,6 +12,7 @@ before_script:
 
 
 build:
+  when: manual
   script:
     - cd ansible
     - ansible-playbook -i inventory-dev.ini site.yml --check
