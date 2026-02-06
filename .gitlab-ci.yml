@@ -6,9 +6,12 @@ variables:
   #PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 before_script:
-  - uvx ansible --version
+  - uv tool install --with-executables-from ansible-core,ansible-lint ansible
+  #- uvx ansible --version
   #- uvx ansible-playbook -i inventory.ini site.yml
 
-test:
+
+build:
   script:
-    - uv python list
+    - cd ansible
+    - ansible-playbook -i inventory-dev.ini site.yml --check
