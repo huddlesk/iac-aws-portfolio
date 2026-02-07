@@ -1,7 +1,7 @@
 FROM astral/uv:0.10-python3.13-alpine
 
 # Install system dependencies
-RUN apk add --no-cache openssh-client curl
+RUN apk add --no-cache openssh-client curl git
 
 # Install ansible using uv tool
 # We include executables from ansible-core to ensure ansible-playbook is available
