@@ -24,4 +24,4 @@ build:
     - echo "$ANSIBLE_HOST_KEY_CHECKING"
     #- ls -la "$CI_PROJECT_DIR/.secure_files/"
     - cd ansible
-    - ansible-playbook -i inventory-dev.ini site.yml --check --extra-vars="ansible_ssh_private_key_file=$SSH_PRIVATE_KEY_FILE"
+    - ansible-playbook -i inventory-dev.ini site.yml --extra-vars="ansible_ssh_private_key_file=$SSH_PRIVATE_KEY_FILE"
