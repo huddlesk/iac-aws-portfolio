@@ -27,6 +27,18 @@ lint:
   stage: lint
   variables:
     TF_VAR_env: "$[[ inputs.environment ]]"
+    TF_PLUGIN_CACHE_DIR: "${CI_PROJECT_DIR}/.terraform-provider-cache"  # Global cache
+  cache:
+    key:
+      files:
+        - terraform/environments/$[[ inputs.environment ]]/.terraform.lock.hcl  # Per-env lockfile
+        - .terraform.lock.hcl  # Or global
+    paths:
+      - terraform/environments/$[[ inputs.environment ]]/.terraform/  # Local providers/modules
+      - .terraform-provider-cache/  # Plugin cache
+    policy: pull-push  # Reuse + save
+  before_script:  # Optional: mkdir if needed
+    - mkdir -p .terraform-provider-cache
   script:
     - set -o pipefail
     - cd ansible
