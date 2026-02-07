@@ -10,7 +10,7 @@ before_script:
   - echo "$(uv self version)"
   - echo "$(ansible --version)"
   #- uv tool install --with-executables-from ansible-core,ansible-lint ansible
-  - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+  - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
   #- uvx ansible --version
   #- uvx ansible-playbook -i inventory.ini site.yml
 
