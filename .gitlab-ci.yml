@@ -25,7 +25,6 @@ before_script:
 
 lint:
   stage: lint
-  when: manual
   variables:
     TF_VAR_env: "$[[ inputs.environment ]]"
   script:
