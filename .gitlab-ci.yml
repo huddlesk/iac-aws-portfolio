@@ -9,22 +9,20 @@ image: huddlesk/uv-ansible-alpine:0.10.0
 before_script:
   - echo "$(uv self version)"
   - echo "$(ansible --version)"
-  #- uv tool install --with-executables-from ansible-core,ansible-lint ansible
   - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
-  #- uvx ansible --version
-  #- uvx ansible-playbook -i inventory.ini site.yml
-
+  - mkdir ~/.ssh && chmod 700 ~/.ssh && mv $CI_PROJECT_DIR/.secure_files/id_ed25519_npp ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+  
 build:
   when: manual
   variables:
-  #PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
     ANSIBLE_HOST_KEY_CHECKING: False
-    SSH_PRIVATE_KEY_FILE: "$CI_PROJECT_DIR/.secure_files/id_ed25519_npp"
+    #SSH_PRIVATE_KEY_FILE: "$CI_PROJECT_DIR/.secure_files/id_ed25519_npp"
   script:
-    - chmod 600 $SSH_PRIVATE_KEY_FILE
+    #- chmod 600 $SSH_PRIVATE_KEY_FILE
     #- ssh -T -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY_FILE ec2-user@44.204.116.61
-    - echo "$SSH_PRIVATE_KEY_FILE"
-    - echo "$ANSIBLE_HOST_KEY_CHECKING"
+    #- echo "$SSH_PRIVATE_KEY_FILE"
+    #- echo "$ANSIBLE_HOST_KEY_CHECKING"
     #- ls -la "$CI_PROJECT_DIR/.secure_files/"
     - cd ansible
-    - ansible-playbook -i inventory-dev.ini site.yml --extra-vars="ansible_ssh_private_key_file=$SSH_PRIVATE_KEY_FILE"
+    #- ansible-playbook -i inventory-dev.ini site.yml --extra-vars="ansible_ssh_private_key_file=$SSH_PRIVATE_KEY_FILE"
+    - ansible-playbook -i inventory-dev.ini site.yml
