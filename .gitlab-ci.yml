@@ -1,12 +1,15 @@
-image: astral/uv:debian
+#image: astral/uv:debian
 #image: astral/uv:0.10-python3.13-alpine
+image: huddlesk/uv-ansible-alpine:0.10.0
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 
 
 before_script:
-  - uv tool install --with-executables-from ansible-core,ansible-lint ansible
+  - echo "$(uv self version)"
+  - echo "$(ansible --version)"
+  #- uv tool install --with-executables-from ansible-core,ansible-lint ansible
   - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   #- uvx ansible --version
   #- uvx ansible-playbook -i inventory.ini site.yml
