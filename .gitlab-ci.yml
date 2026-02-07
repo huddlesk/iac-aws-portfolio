@@ -35,10 +35,12 @@ provision:
   stage: provision
   when: manual
   script:
-    - cd terraform
+    - cd terraform/environments/dev
+    - cat tfplan
+    - '[ -f "tfplan" ] && echo "Exists" || echo "Missing"'
     - terraform init
     #- terraform plan -out=tfplan
-    #- terraform apply -auto-approve
+    - terraform apply tfplan
 
 configure:
   stage: configure
