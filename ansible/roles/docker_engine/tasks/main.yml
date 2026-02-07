@@ -32,4 +32,3 @@
     name: ec2-user
     groups: docker
     append: true
-
