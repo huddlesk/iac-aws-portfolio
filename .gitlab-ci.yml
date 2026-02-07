@@ -1,10 +1,11 @@
-image: huddlesk/uv-ansible-terraform-alpine:0-10.2-2.1-14.1
-
 spec:
   inputs:
     environment:
       options: ["dev", "staging", "prod"]
       description: "Select the environment to deploy to"
+---
+
+image: huddlesk/uv-ansible-terraform-alpine:0-10.2-2.1-14.1
 
 stages:
   - lint
