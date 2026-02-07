@@ -13,6 +13,8 @@
   ansible.builtin.dnf:
     name: "{{ docker_engine_docker_packages }}"
     state: present
+    update_cache: true
+  loop: "{{ docker_engine_docker_packages }}"
 
 - name: Start and enable Docker service
   ansible.builtin.systemd:
@@ -30,3 +32,4 @@
     name: ec2-user
     groups: docker
     append: true
+

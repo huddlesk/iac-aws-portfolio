@@ -1,4 +1,4 @@
 docker_engine_docker_packages:
-  - docker-ce
-  - docker-ce-cli
-  - containerd.io
+  - docker
+  - containerd
+  - runc
