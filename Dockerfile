@@ -7,3 +7,4 @@ RUN apk add --no-cache openssh-client curl
 # We include executables from ansible-core to ensure ansible-playbook is available
 ENV PATH="/root/.local/bin:$PATH"
 RUN uv tool install --with-executables-from ansible-core ansible
+RUN uv tool install ansible-lint
