@@ -12,6 +12,8 @@ before_script:
 
 lint:
   stage: lint
+  variables:
+    TF_VAR_env: "dev"
   script:
     - set -o pipefail
     #- uv tool install ansible-lint
