@@ -25,7 +25,7 @@ lint:
   artifacts:
     paths:
       - ansible/ansible-lint.txt
-      - terraform/tfplan
+      - terraform/environments/dev/tfplan
     untracked: false
     when: always
     access: all
