@@ -2,34 +2,49 @@ image: huddlesk/uv-ansible-alpine:0.10.0
 
 stages:
   - lint
-  - build
+  - provision
+  - configure
 
 before_script:
   - echo "$(uv self version)"
   - echo "$(ansible --version)"
-  - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
-  - mkdir ~/.ssh && chmod 700 ~/.ssh && mv $CI_PROJECT_DIR/.secure_files/id_ed25519_npp ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+  - echo "$(terraform --version)"
 
 lint:
   stage: lint
   script:
     - set -o pipefail
-    - uv tool install ansible-lint
+    #- uv tool install ansible-lint
     - cd ansible
     - ansible-lint site.yml | tee ansible-lint.txt
+    - cd terraform
+    - terraform init
+    - terraform plan -out=tfplan
   artifacts:
     paths:
       - ansible/ansible-lint.txt
+      - terraform/tfplan
     untracked: false
     when: always
     access: all
     expire_in: "30 days"
 
+provision:
+  stage: provision
+  when: manual
+  script:
+    - cd terraform
+    - terraform init
+    #- terraform plan -out=tfplan
+    #- terraform apply -auto-approve
+
 configure:
-  stage: build
+  stage: configure
   when: manual
   variables:
     ANSIBLE_HOST_KEY_CHECKING: False
   script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
+    - mkdir ~/.ssh && chmod 700 ~/.ssh && mv $CI_PROJECT_DIR/.secure_files/id_ed25519_npp ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
     - cd ansible
     - ansible-playbook -i inventory-dev.ini site.yml
