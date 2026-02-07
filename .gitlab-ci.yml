@@ -18,5 +18,6 @@ build:
     SSH_PRIVATE_KEY_FILE: "$CI_PROJECT_DIR/.secure_files/id_ed25519"
   script:
     - chmod 600 $SSH_PRIVATE_KEY_FILE
+    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY_FILE ec2-user@44.204.116.61
     - cd ansible
     - ansible-playbook -i inventory-dev.ini site.yml --check --extra-vars="ansible_ssh_private_key_file=$SSH_PRIVATE_KEY_FILE"
