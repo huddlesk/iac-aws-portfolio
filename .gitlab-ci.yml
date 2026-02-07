@@ -1,11 +1,27 @@
+# This .gitlab-ci.yml defines a CI/CD pipeline for an infrastructure-as-code project using Ansible and Terraform.
+# The pipeline includes three stages: lint-and-plan, provision, and configure. 
+# It supports manual triggers from the GitLab UI and scheduled pipelines, as well as automatic 
+# execution on the default branch.
+# The pipeline uses a custom Docker image that includes Ansible, Terraform, and uv for managing Python dependencies.
+# The lint-and-plan stage runs ansible-lint and Terraform plan, caching dependencies for efficiency. 
+# The provision stage applies the Terraform plan, and the configure stage runs Ansible 
+# playbooks to configure the provisioned infrastructure.
+# The pipeline also defines an input variable for selecting the deployment environment (dev, staging, prod), 
+# which is used to target specific Terraform configurations and Ansible inventories.
+
 spec:
   inputs:
-    environment:
+    environment: # Provide this on job run from the GitLab UI
       type: string
-      options: ["dev", "staging", "prod"]
-      default: "dev" #pass different value through git push
+      options: ["dev", "prod"]
+      default: "dev" 
       description: "Select the environment to deploy to"
 ---
+# Use a custom Docker image that includes Ansible, Terraform, and uv for managing Python dependencies
+# The image is built from the provided Dockerfile, which installs Ansible, Terraform, and necessary dependencies.
+# The image tag includes versions for uv, Ansible, and Terraform to ensure consistency across CI runs.
+# The final digit of the tag is the version of the Docker image itself, 
+# which can be incremented for updates to the image without changing the underlying tool versions.
 image: huddlesk/uv-ansible-terraform-alpine:0-10.2-2.1-14.1
 
 workflow:
@@ -15,27 +31,28 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables pipelines on main
 
 stages:
-  - lint
-  - provision
-  - configure
+  - lint-and-plan # Ansible linting and Terraform planning stage
+  - provision # Terraform apply stage
+  - configure # Ansible playbook execution stage
 
-before_script:
+before_script: # Optional: Print versions for debugging
   - echo "$(uv self version)"
   - echo "$(ansible --version)"
   - echo "$(terraform --version)"
   - echo "Selected environment $[[ inputs.environment ]]"
 
-lint:
-  stage: lint
+lint_and_plan:
+  stage: lint-and-plan
+  environment: $[[ inputs.environment ]]
   variables:
     TF_VAR_env: "$[[ inputs.environment ]]"
     TF_PLUGIN_CACHE_DIR: "${CI_PROJECT_DIR}/.terraform-provider-cache"  # Global cache
   cache:
     key:
-      files:
+      files: # Cache based on lockfiles to ensure updates are captured
         - terraform/environments/$[[ inputs.environment ]]/.terraform.lock.hcl  # Per-env lockfile
         - .terraform.lock.hcl  # Or global
-    paths:
+    paths: # Cache plugins and providers to speed up subsequent runs
       - terraform/environments/$[[ inputs.environment ]]/.terraform/  # Local providers/modules
       - .terraform-provider-cache/  # Plugin cache
     policy: pull-push  # Reuse + save
@@ -49,12 +66,12 @@ lint:
     - terraform init
     - terraform plan -out=tfplan
   artifacts:
-    paths:
+    paths: # Save lint results and Terraform plan for review and later stages
       - ansible/ansible-lint.txt
       - terraform/environments/$[[ inputs.environment ]]/tfplan
     untracked: false
-    when: always
-    expire_in: "30 days"
+    when: always # Always save artifacts, even if the job fails, for debugging
+    expire_in: "3 days"
 
 provision:
   stage: provision
@@ -74,7 +91,9 @@ configure:
   variables:
     ANSIBLE_HOST_KEY_CHECKING: "False"
   script:
+    # Download and set up the secure files installer, which retrieves the SSH private key for Ansible to connect to the provisioned hosts
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
+    # Set SSH key permissions and move it to the correct location for Ansible
     - mkdir ~/.ssh && chmod 700 ~/.ssh && mv $CI_PROJECT_DIR/.secure_files/id_ed25519_npp ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
     - cd ansible
     - ansible-playbook -i inventory-$[[ inputs.environment ]].ini site.yml
