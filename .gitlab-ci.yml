@@ -8,6 +8,10 @@ spec:
 ---
 image: huddlesk/uv-ansible-terraform-alpine:0-10.2-2.1-14.1
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"  # Enables manual UI trigger
+
 stages:
   - lint
   - provision
