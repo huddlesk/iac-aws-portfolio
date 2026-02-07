@@ -1,6 +1,6 @@
 ---
 - name: Install Docker on Amazon Linux
   hosts: ec2_instances
-  become: yes
+  become: true
   roles:
     - docker_engine

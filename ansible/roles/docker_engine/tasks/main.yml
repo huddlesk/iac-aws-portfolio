@@ -1,26 +1,31 @@
-- name: Update all packages
-  yum:
-    name: '*'
-    state: latest
+- name: Install yum-utils
+  ansible.builtin.yum:
+    name: yum-utils
+    state: present
 
-- name: Install docker
-  yum:
-    name: docker
+- name: Add Docker repo
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install Docker
+  ansible.builtin.yum:
+    name: "{{ docker_engine_docker_packages }}"
     state: present
 
 - name: Start and enable Docker service
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure docker group exists
-  group:
+  ansible.builtin.group:
     name: docker
     state: present
 
 - name: Add ec2-user to docker group
-  user:
+  ansible.builtin.user:
     name: ec2-user
     groups: docker
-    append: yes
+    append: true
