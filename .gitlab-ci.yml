@@ -82,7 +82,7 @@ provision:
     - terraform init
     - terraform apply -auto-approve tfplan
   needs:
-    - lint
+    - lint-and-plan
 
 configure:
   stage: configure
