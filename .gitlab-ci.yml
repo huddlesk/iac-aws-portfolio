@@ -31,9 +31,34 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables pipelines on main
 
 stages:
+  - build_runner
   - lint-and-plan # Ansible linting and Terraform planning stage
   - provision # Terraform apply stage
   - configure # Ansible playbook execution stage
+
+variables:
+  DOCKER_IMAGE_NAME: huddlesk/uv-ansible-terraform-alpine
+  DOCKER_IMAGE_TAG: 0-10.2-2.1-14.2
+
+build_deploy_runner_image:
+  stage: build_runner
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+    - docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - Dockerfile
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - Dockerfile
+    - if: $CI_PIPELINE_SOURCE == "web"
+
 
 before_script: # Optional: Print versions for debugging
   - echo "$(uv self version)"
