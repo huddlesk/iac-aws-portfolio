@@ -52,10 +52,10 @@ trigger-child:
         inputs:
           environment: $[[ inputs.environment ]]  
       - artifact: generated-config.yml
-        job: generated-config 
+        job: generate-config 
     strategy: depend # Wait for child completion
   needs:
-    - job: generated-config
+    - job: generate-config
       artifacts: true # Ensure artifact available
 
 # include:
