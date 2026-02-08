@@ -19,6 +19,7 @@ default:
   - echo "$(terraform --version)"
   - echo "Selected environment $[[ inputs.environment ]]"
   - echo "Latest tag $(git describe --tags --abbrev=0)"
+  - echo "Commit Tag $CI_COMMIT_TAG"
 
 build_deploy_runner_image:
   stage: build_runner

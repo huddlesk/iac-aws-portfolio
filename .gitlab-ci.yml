@@ -40,6 +40,7 @@ generate-config:
     - export LATEST_TAG=$(git describe --tags --abbrev=0)
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"'
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml'
+    - echo "Commit Tag $CI_COMMIT_TAG"
   artifacts:
     paths:
       - generated-config.yml
