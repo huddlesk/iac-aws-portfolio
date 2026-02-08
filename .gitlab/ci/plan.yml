@@ -1,0 +1,32 @@
+lint_and_plan:
+  stage: lint-and-plan
+  when: manual
+  environment: $[[ inputs.environment ]]
+  variables:
+    TF_VAR_env: "$[[ inputs.environment ]]"
+    TF_PLUGIN_CACHE_DIR: "${CI_PROJECT_DIR}/.terraform-provider-cache"  # Global cache
+  cache:
+    key:
+      files: # Cache based on lockfiles to ensure updates are captured
+        - terraform/environments/$[[ inputs.environment ]]/.terraform.lock.hcl  # Per-env lockfile
+        - .terraform.lock.hcl  # Or global
+    paths: # Cache plugins and providers to speed up subsequent runs
+      - terraform/environments/$[[ inputs.environment ]]/.terraform/  # Local providers/modules
+      - .terraform-provider-cache/  # Plugin cache
+    policy: pull-push  # Reuse + save
+  before_script:  # Optional: mkdir if needed
+    - mkdir -p .terraform-provider-cache
+  script:
+    - set -o pipefail
+    - cd ansible
+    - ansible-lint site.yml | tee ansible-lint.txt
+    - cd ../terraform/environments/$[[ inputs.environment ]]
+    - terraform init
+    - terraform plan -out=tfplan
+  artifacts:
+    paths: # Save lint results and Terraform plan for review and later stages
+      - ansible/ansible-lint.txt
+      - terraform/environments/$[[ inputs.environment ]]/tfplan
+    untracked: false
+    when: always # Always save artifacts, even if the job fails, for debugging
+    expire_in: "3 days"

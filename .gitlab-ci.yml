@@ -36,8 +36,6 @@ stages:
   - provision # Terraform apply stage
   - configure # Ansible playbook execution stage
 
-
-
 default:
   before_script: # Optional: Print versions for debugging
   - echo "$(uv self version)"
@@ -46,68 +44,26 @@ default:
   - echo "Selected environment $[[ inputs.environment ]]""
   - echo "Latest tag $(git describe --tags --abrev=0)"
 
+generate-config:
+  stage: .pre
+  script:
+    - LATEST_TAG=$(git describe --tags --abrev=0)
+    - echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"
+    - echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml
+  artifacts:
+    paths:
+      - generated-config.yml
+    
 include:
   - local: .gitlab/ci/runner_build_deplay.yml
     rules:
       - if: '$CI_COMMIT_TAG != null'
       - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - local: .gitlab/ci/plan.yml
+  - local: .gitlab/ci/provision.yml
+  - local: .gitlab/ci/configure.yml
+  #- local: generated-config.yml
 
-lint_and_plan:
-  stage: lint-and-plan
-  when: manual
-  environment: $[[ inputs.environment ]]
-  variables:
-    TF_VAR_env: "$[[ inputs.environment ]]"
-    TF_PLUGIN_CACHE_DIR: "${CI_PROJECT_DIR}/.terraform-provider-cache"  # Global cache
-  cache:
-    key:
-      files: # Cache based on lockfiles to ensure updates are captured
-        - terraform/environments/$[[ inputs.environment ]]/.terraform.lock.hcl  # Per-env lockfile
-        - .terraform.lock.hcl  # Or global
-    paths: # Cache plugins and providers to speed up subsequent runs
-      - terraform/environments/$[[ inputs.environment ]]/.terraform/  # Local providers/modules
-      - .terraform-provider-cache/  # Plugin cache
-    policy: pull-push  # Reuse + save
-  before_script:  # Optional: mkdir if needed
-    - mkdir -p .terraform-provider-cache
-  script:
-    - set -o pipefail
-    - cd ansible
-    - ansible-lint site.yml | tee ansible-lint.txt
-    - cd ../terraform/environments/$[[ inputs.environment ]]
-    - terraform init
-    - terraform plan -out=tfplan
-  artifacts:
-    paths: # Save lint results and Terraform plan for review and later stages
-      - ansible/ansible-lint.txt
-      - terraform/environments/$[[ inputs.environment ]]/tfplan
-    untracked: false
-    when: always # Always save artifacts, even if the job fails, for debugging
-    expire_in: "3 days"
 
-provision:
-  stage: provision
-  environment: $[[ inputs.environment ]]
-  when: manual
-  script:
-    - cd terraform/environments/$[[ inputs.environment ]]
-    - terraform init
-    - terraform apply -auto-approve tfplan
-  needs:
-    - lint_and_plan
 
-configure:
-  stage: configure
-  environment: $[[ inputs.environment ]]
-  when: manual
-  variables:
-    ANSIBLE_HOST_KEY_CHECKING: "False"
-  script:
-    # Download and set up the secure files installer, which retrieves the SSH private key for Ansible to connect to the provisioned hosts
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | sh
-    # Set SSH key permissions and move it to the correct location for Ansible
-    - mkdir ~/.ssh && chmod 700 ~/.ssh && mv $CI_PROJECT_DIR/.secure_files/id_ed25519_npp ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
-    - cd ansible
-    - ansible-playbook -i inventory-$[[ inputs.environment ]].ini site.yml
-  needs:
-    - provision
+

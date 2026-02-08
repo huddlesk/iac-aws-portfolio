@@ -1,0 +1,10 @@
+provision:
+  stage: provision
+  environment: $[[ inputs.environment ]]
+  when: manual
+  script:
+    - cd terraform/environments/$[[ inputs.environment ]]
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  needs:
+    - lint_and_plan
