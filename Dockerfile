@@ -9,7 +9,7 @@ ENV PATH="/root/.local/bin:$PATH"
 RUN uv tool install --with-executables-from ansible-core ansible
 RUN uv tool install ansible-lint
 
-ARG TARGETARCH
+ARG TARGETARCH=amd64
 # Install Terraform for multiple architectures
 RUN apk add --no-cache wget unzip \
     && wget https://releases.hashicorp.com/terraform/1.14.4/terraform_1.14.4_linux_${TARGETARCH}.zip \
