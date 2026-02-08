@@ -50,6 +50,7 @@ include:
   - local: .gitlab/ci/runner_build_deplay.yml
     rules:
       - if: '$CI_COMMIT_TAG != null'
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 lint_and_plan:
   stage: lint-and-plan
