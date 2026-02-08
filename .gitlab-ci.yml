@@ -22,7 +22,6 @@ spec:
 # The image tag includes versions for uv, Ansible, and Terraform to ensure consistency across CI runs.
 # The final digit of the tag is the version of the Docker image itself, 
 # which can be incremented for updates to the image without changing the underlying tool versions.
-#image: huddlesk/uv-ansible-terraform-alpine:0-10.2-2.1-14.1
 
 workflow:
   rules:
@@ -30,18 +29,51 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"  # Enables scheduled pipelines
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables pipelines on main
     - if: $CI_COMMIT_TAG != null  # Enables pipelines on tags (e.g., for releases)
-
+    
 stages:
   - .pre
   - trigger_child_pipeline
 
 generate-config:
   stage: .pre
+  before_script:
+    - git fetch --tags --prune-tags
   script:
-    - export LATEST_TAG=$(git describe --tags --abbrev=0)
+    # Main branch: check if HEAD == latest tag
+    - echo "Checking main branch $CI_COMMIT_SHA"
+    - export LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"'
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml'
     - echo "Commit Tag $CI_COMMIT_TAG"
+
+    # Skip check if not main branch
+    - |
+      if [ "$CI_COMMIT_BRANCH" != "main" ]; then
+        echo "Not main branch ($CI_COMMIT_BRANCH). Skipping tag check."
+        exit 0
+      fi
+    # Skip check if no tags found
+    - |
+      if [ -z "$LATEST_TAG" ]; then
+        echo "No tags found. Proceeding."
+        exit 0
+      fi
+      
+    - TAG_SHA=$(git rev-parse "$LATEST_TAG")
+    - 'echo "Latest tag $LATEST_TAG points to: $TAG_SHA"'
+
+    # Check if HEAD matches the latest tag
+    - |
+      if [ "$TAG_SHA" = "$CI_COMMIT_SHA" ]; then
+        echo "ERROR: HEAD ($CI_COMMIT_SHA) matches latest tag ($LATEST_TAG)."
+        echo "Skipping redundant pipeline."
+        exit 1  # Fails pipeline
+      else
+        echo "HEAD ahead of tags. Proceeding."
+        exit 0
+      fi
+  allow_failure: false
   artifacts:
     paths:
       - generated-config.yml
