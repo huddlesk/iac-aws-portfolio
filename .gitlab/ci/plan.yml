@@ -1,3 +1,11 @@
+spec:
+  inputs:
+    environment: # Provide this on job run from the GitLab UI
+      type: string
+      options: ["dev", "prod"]
+      default: "dev" 
+      description: "Select the environment to deploy to"
+---
 lint_and_plan:
   stage: lint-and-plan
   when: manual
