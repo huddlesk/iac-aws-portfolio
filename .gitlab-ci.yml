@@ -47,9 +47,9 @@ default:
 generate-config:
   stage: .pre
   script:
-    - LATEST_TAG=$(git describe --tags --abrev=0)
-    - echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"
-    - echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml
+    - export LATEST_TAG=$(git describe --tags --abrev=0)
+    - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"'
+    - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml'
   artifacts:
     paths:
       - generated-config.yml
