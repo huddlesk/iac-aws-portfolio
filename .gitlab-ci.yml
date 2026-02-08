@@ -36,39 +36,45 @@ stages:
   - provision # Terraform apply stage
   - configure # Ansible playbook execution stage
 
-variables:
-  DOCKER_IMAGE_NAME: huddlesk/uv-ansible-terraform-alpine
-  DOCKER_IMAGE_TAG: 0-10.2-2.1-14.2
+
+
+default:
+  before_script: # Optional: Print versions for debugging
+  - echo "$(uv self version)"
+  - echo "$(ansible --version)"
+  - echo "$(terraform --version)"
+  - echo "Selected environment $[[ inputs.environment ]]""
+  - echo "Latest tag $(git describe --tags --abrev=0)"
 
 build_deploy_runner_image:
   stage: build_runner
   image: docker:20.10.16
+  variables:
+    DOCKER_IMAGE_NAME: huddlesk/uv-ansible-terraform-alpine
+    DOCKER_IMAGE_TAG: 0-10.2-2.1-14.2
   when: manual
   services:
     - docker:20.10.16-dind
   before_script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - if [ -n "$CI_COMMIT_TAG" ]; then
+        echo "Build for $CI_COMMIT_TAG";
+        export LATEST_TAG="$CI_COMMIT_TAG";
+      else
+        export LATEST_TAG=$(git describe --tags --abrev=0);
+        echo "Build for $LATEST_TAG";
+      fi
   script:
-    - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
-    - docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+    - docker version
+    #- docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+    #- docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - Dockerfile
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - Dockerfile
+    - if: '$CI_COMMIT_TAG != null'
     - if: $CI_PIPELINE_SOURCE == "web"
-
-
-before_script: # Optional: Print versions for debugging
-  - echo "$(uv self version)"
-  - echo "$(ansible --version)"
-  - echo "$(terraform --version)"
-  - echo "Selected environment $[[ inputs.environment ]]"
 
 lint_and_plan:
   stage: lint-and-plan
+  when: manual
   environment: $[[ inputs.environment ]]
   variables:
     TF_VAR_env: "$[[ inputs.environment ]]"
