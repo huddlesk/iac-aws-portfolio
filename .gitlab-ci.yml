@@ -41,7 +41,7 @@ default:
   - echo "$(uv self version)"
   - echo "$(ansible --version)"
   - echo "$(terraform --version)"
-  - echo "Selected environment $[[ inputs.environment ]]""
+  - echo "Selected environment $[[ inputs.environment ]]"
   - echo "Latest tag $(git describe --tags --abrev=0)"
 
 generate-config:
