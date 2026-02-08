@@ -43,6 +43,7 @@ variables:
 build_deploy_runner_image:
   stage: build_runner
   image: docker:20.10.16
+  when: manual
   services:
     - docker:20.10.16-dind
   before_script:
