@@ -62,7 +62,7 @@ build_deploy_runner_image:
         echo "Build for $CI_COMMIT_TAG";
         export LATEST_TAG="$CI_COMMIT_TAG";
       else
-        export LATEST_TAG=$(git describe --tags --abrev=0);
+        export LATEST_TAG=$(git describe --tags --abbrev=0);
         echo "Build for $LATEST_TAG";
       fi
   script:
@@ -72,6 +72,7 @@ build_deploy_runner_image:
   rules:
     - if: '$CI_COMMIT_TAG != null'
     - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables a pipelines on main
 
 lint_and_plan:
   stage: lint-and-plan
