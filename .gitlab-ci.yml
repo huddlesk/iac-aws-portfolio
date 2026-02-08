@@ -48,7 +48,7 @@ trigger-child:
   stage: trigger_child_pipeline
   trigger:
     include:
-      - local: .gitlab/ci/all.yml  
+      - local: .gitlab/ci/build_plan_provision_configure.yml  
         inputs:
           environment: $[[ inputs.environment ]]  
       - artifact: generated-config.yml
@@ -57,23 +57,3 @@ trigger-child:
   needs:
     - job: generate-config
       artifacts: true # Ensure artifact available
-
-# include:
-#   - local: .gitlab/ci/runner_build_deplay.yml
-#     rules:
-#       - if: '$CI_COMMIT_TAG != null'
-#       - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-#   - local: .gitlab/ci/plan.yml
-#     inputs:
-#       environment: $[[ inputs.environment ]]
-#   - local: .gitlab/ci/provision.yml
-#     inputs:
-#       environment: $[[ inputs.environment ]]
-#   - local: .gitlab/ci/configure.yml
-#     inputs:
-#       environment: $[[ inputs.environment ]]
-  #- local: generated-config.yml
-
-
-
-
