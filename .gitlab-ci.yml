@@ -30,6 +30,10 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"  # Enables scheduled pipelines
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables pipelines on main
 
+stages:
+  - .pre
+  - trigger_child_pipeline
+
 generate-config:
   stage: .pre
   script:
@@ -41,7 +45,7 @@ generate-config:
       - generated-config.yml
 
 trigger-child:
-  stage: trigger
+  stage: trigger_child_pipeline
   trigger:
     include:
       - local: .gitlab/ci/all.yml  
