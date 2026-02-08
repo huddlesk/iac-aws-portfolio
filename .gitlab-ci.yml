@@ -42,12 +42,12 @@ default:
   - echo "$(ansible --version)"
   - echo "$(terraform --version)"
   - echo "Selected environment $[[ inputs.environment ]]"
-  - echo "Latest tag $(git describe --tags --abrev=0)"
+  - echo "Latest tag $(git describe --tags --abbrev=0)"
 
 generate-config:
   stage: .pre
   script:
-    - export LATEST_TAG=$(git describe --tags --abrev=0)
+    - export LATEST_TAG=$(git describe --tags --abbrev=0)
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"'
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml'
   artifacts:
