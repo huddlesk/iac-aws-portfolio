@@ -53,7 +53,7 @@ generate-config:
         echo "Not main branch ($CI_COMMIT_BRANCH). Skipping tag check."
         exit 0
       fi
-    # Skip check if no tags found
+    # Skip check if no tags found either
     - |
       if [ -z "$LATEST_TAG" ]; then
         echo "No tags found. Proceeding."
