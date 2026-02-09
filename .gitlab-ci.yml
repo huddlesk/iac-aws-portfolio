@@ -63,7 +63,7 @@ generate-config:
     - TAG_SHA=$(git rev-parse "$LATEST_TAG")
     - 'echo "Latest tag $LATEST_TAG points to: $TAG_SHA"'
 
-    # Check if HEAD matches the latest tag
+    # Check if HEAD matches the latest tag and exit
     - |
       if [ "$TAG_SHA" = "$CI_COMMIT_SHA" ]; then
         echo "ERROR: HEAD ($CI_COMMIT_SHA) matches latest tag ($LATEST_TAG)."
