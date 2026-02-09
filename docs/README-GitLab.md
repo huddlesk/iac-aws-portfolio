@@ -79,9 +79,10 @@ The image tag follows the format: `MAJOR-UV_VERSION-ANSIBLE_VERSION-TERRAFORM_VE
 
 Example: `0-10.2-2.1-14.2`
 - MAJOR version: Pipeline/image evolution indicator
-- uv version: 10.2
-- Ansible version: 2.1
-- Terraform version: 14.2
+- uv version: 0.10
+- Ansible version: 2.2
+- Terraform version: 1-14
+- Image version: 2
 
 The version tags ensure consistent tooling across all CI/CD pipeline runs, preventing tool version drift and related issues.
 
