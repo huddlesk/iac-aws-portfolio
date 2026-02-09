@@ -1,93 +1,155 @@
-# This .gitlab-ci.yml defines a CI/CD pipeline for an infrastructure-as-code project using Ansible and Terraform.
-# The pipeline includes three stages: lint-and-plan, provision, and configure. 
-# It supports manual triggers from the GitLab UI and scheduled pipelines, as well as automatic 
-# execution on the default branch.
-# The pipeline uses a custom Docker image that includes Ansible, Terraform, and uv for managing Python dependencies.
-# The lint-and-plan stage runs ansible-lint and Terraform plan, caching dependencies for efficiency. 
-# The provision stage applies the Terraform plan, and the configure stage runs Ansible 
-# playbooks to configure the provisioned infrastructure.
-# The pipeline also defines an input variable for selecting the deployment environment (dev, staging, prod), 
-# which is used to target specific Terraform configurations and Ansible inventories.
-
+# ============================================================================
+# GitLab CI/CD Pipeline: Infrastructure as Code (IaC) with Ansible & Terraform
+# ============================================================================
+#
+# PURPOSE:
+#   This pipeline automates the complete lifecycle of infrastructure provisioning
+#   and configuration using Infrastructure-as-Code principles. It validates,
+#   deploys, and configures infrastructure changes across multiple environments.
+#
+# ARCHITECTURE:
+#   This is a parent pipeline (.gitlab-ci.yml) that controls the overall workflow
+#   and triggers a child pipeline (.gitlab/ci/build_plan_provision_configure.yml)
+#   with the appropriate environment configuration.
+#
+# PIPELINE STAGES:
+#   1. .pre (generate-config):
+#      - Checks if the current commit is tagged
+#      - Skips redundant pipelines when HEAD matches the latest tag
+#      - Generates dynamic configuration with Docker image tag
+#   
+#   2. trigger_child_pipeline (trigger-child):
+#      - Triggers the child pipeline with environment input
+#      - Waits for child pipeline completion before finishing
+#      - Passes generated configuration to child pipeline
+#
+# DOCKER IMAGE:
+#   Custom image: huddlesk/uv-ansible-terraform-alpine
+#   Includes: uv (Python package manager), Ansible, Terraform, Git
+#   Image tag format: MAJOR-UV_VERSION-ANSIBLE_VERSION-TERRAFORM_VERSION
+#   Built from: Dockerfile (see project root)
+#
+# TRIGGERS & EXECUTION:
+#   - Manual trigger via GitLab UI
+#   - Scheduled pipelines (set via GitLab UI)
+#   - Automatic on commits to default branch (main)
+#   - Automatic on tagged commits (for releases)
+#
+# INPUT VARIABLES:
+#   environment: Select deployment target (dev, prod) via GitLab UI
+#
+# SECURITY:
+#   - SSH keys managed via GitLab Secure Files
+#   - Docker Hub credentials via CI/CD variables
+#   - No hardcoded credentials in pipeline
+#
+# See docs/README-GitLab.md for detailed documentation
 spec:
   inputs:
-    environment: # Provide this on job run from the GitLab UI
+    # Environment input variable for multi-environment support
+    environment:
       type: string
       options: ["dev", "prod"]
       default: "dev" 
-      description: "Select the environment to deploy to"
+      description: "Select the target deployment environment (dev or prod)"
 ---
-# Use a custom Docker image that includes Ansible, Terraform, and uv for managing Python dependencies
-# The image is built from the provided Dockerfile, which installs Ansible, Terraform, and necessary dependencies.
-# The image tag includes versions for uv, Ansible, and Terraform to ensure consistency across CI runs.
-# The final digit of the tag is the version of the Docker image itself, 
-# which can be incremented for updates to the image without changing the underlying tool versions.
 
+# Workflow rules: Control when the pipeline executes
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "web"  # Enables manual UI trigger
-    - if: $CI_PIPELINE_SOURCE == "schedule"  # Enables scheduled pipelines
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Enables pipelines on main
-    - if: $CI_COMMIT_TAG != null  # Enables pipelines on tags (e.g., for releases)
+    - if: $CI_PIPELINE_SOURCE == "web"  # Manual trigger from GitLab UI
+    - if: $CI_PIPELINE_SOURCE == "schedule"  # Scheduled pipeline execution
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH  # Push to default branch (main)
+    - if: $CI_COMMIT_TAG != null  # Tag creation (e.g., release tags)
     
 stages:
-  - .pre
-  - trigger_child_pipeline
+  - .pre              # Pre-processing: generate dynamic configuration
+  - trigger_child_pipeline  # Trigger child pipeline with environment config
+
+# ============================================================================
+# STAGE: .pre - Configuration Generation
+# ============================================================================
+# This job generates the dynamic pipeline configuration with the Docker image
+# tag that includes version information. It also prevents redundant pipeline
+# runs when the commit is already tagged.
 
 generate-config:
   stage: .pre
   before_script:
+    # Fetch all tags to ensure we have the latest version information
     - git fetch --tags --prune-tags
+  
   script:
-    # Main branch: check if HEAD == latest tag
-    - echo "Checking main branch $CI_COMMIT_SHA"
+    # Determine the latest tag (for Docker image versioning)
+    - 'echo "Checking commit: $CI_COMMIT_SHA"'
     - export LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG"'
     - 'echo "image: huddlesk/uv-ansible-terraform-alpine:$LATEST_TAG" > generated-config.yml'
-    - echo "Commit Tag $CI_COMMIT_TAG"
+    - 'echo "Commit Tag: $CI_COMMIT_TAG"'
+    - 'echo "Latest Tag: $LATEST_TAG"'
 
-    # Skip check if not main branch
+    # Skip redundancy check if not on main branch (allow other branch pipelines)
     - |
       if [ "$CI_COMMIT_BRANCH" != "main" ]; then
-        echo "Not main branch ($CI_COMMIT_BRANCH). Skipping tag check."
+        echo "Branch: $CI_COMMIT_BRANCH (not main). Skipping tag redundancy check."
         exit 0
       fi
-    # Skip check if no tags found either
+    
+    # Skip if no tags exist yet (first deployment)
     - |
       if [ -z "$LATEST_TAG" ]; then
-        echo "No tags found. Proceeding."
+        echo "No tags found. Proceeding with first deployment."
         exit 0
       fi
-      
+    
+    # Check if current commit is already tagged (prevent redundant deploys)
     - TAG_SHA=$(git rev-parse "$LATEST_TAG")
-    - 'echo "Latest tag $LATEST_TAG points to: $TAG_SHA"'
+    - 'echo "Latest tag $LATEST_TAG points to commit: $TAG_SHA"'
 
-    # Check if HEAD matches the latest tag and exit
     - |
       if [ "$TAG_SHA" = "$CI_COMMIT_SHA" ]; then
-        echo "ERROR: HEAD ($CI_COMMIT_SHA) matches latest tag ($LATEST_TAG)."
-        echo "Skipping redundant pipeline."
-        exit 1  # Fails pipeline
+        echo "ERROR: Current commit ($CI_COMMIT_SHA) is already at the latest tag ($LATEST_TAG)."
+        echo "Skipping redundant pipeline run."
+        exit 1
       else
-        echo "HEAD ahead of tags. Proceeding."
+        echo "Commit is ahead of tags. Proceeding with pipeline."
         exit 0
       fi
+  
   allow_failure: false
+  
   artifacts:
     paths:
-      - generated-config.yml
+      - generated-config.yml  # Configuration file with Docker image tag
+
+
+# ============================================================================
+# STAGE: trigger_child_pipeline - Execute Infrastructure Pipeline
+# ============================================================================
+# This job triggers the child pipeline which handles building the Docker image,
+# linting code, planning infrastructure changes, provisioning resources, and
+# configuring them with Ansible.
 
 trigger-child:
   stage: trigger_child_pipeline
+  
   trigger:
+    # Include configuration from child pipeline and generated config
     include:
+      # Child pipeline definition with stage definitions and jobs
       - local: .gitlab/ci/build_plan_provision_configure.yml  
         inputs:
-          environment: $[[ inputs.environment ]]  
+          environment: $[[ inputs.environment ]]  # Pass environment to child pipeline
+      
+      # Generated configuration with Docker image tag
       - artifact: generated-config.yml
         job: generate-config 
-    strategy: depend # Wait for child completion
+    
+    # Wait for child pipeline to complete before marking parent as done
+    strategy: depend
+  
+  # Ensure generated-config job completes first and artifacts are available
   needs:
     - job: generate-config
-      artifacts: true # Ensure artifact available
+      artifacts: true
